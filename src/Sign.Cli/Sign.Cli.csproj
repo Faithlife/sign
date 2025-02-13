@@ -37,7 +37,7 @@
       <ScriptFilePath Condition=" '$(ScriptFilePath)' == '' ">$(RepositoryRootDirectory)\scripts\VerifyNuGetPackage.ps1</ScriptFilePath>
     </PropertyGroup>
 
-    <Exec Command="$(PowerShellFilePath) -NonInteractive -NoProfile -ExecutionPolicy Unrestricted -Command &quot;&amp; { &amp;'$(ScriptFilePath)' '$(ArtifactsShippingPackagesDir)' } &quot;" LogStandardErrorAsError="true" />
+    <Exec Command="$(PowerShellFilePath) -NonInteractive -NoProfile -ExecutionPolicy Unrestricted -Command &quot;&amp; { &amp;'$(ScriptFilePath)' '$(PackageOutputPath)' } &quot;" LogStandardErrorAsError="true" />
   </Target>
 
   <ItemGroup>
