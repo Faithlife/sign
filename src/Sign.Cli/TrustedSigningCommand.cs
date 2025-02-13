@@ -6,6 +6,7 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.IO;
 using Azure.Core;
+using Azure.Identity;
 using Sign.Core;
 using Sign.SignatureProviders.TrustedSigning;
 
@@ -33,7 +34,6 @@ namespace Sign.Cli
             AddOption(EndpointOption);
             AddOption(AccountOption);
             AddOption(CertificateProfileOption);
-            AzureCredentialOptions.AddOptionsToCommand(this);
 
             AddArgument(FilesArgument);
 
@@ -48,11 +48,7 @@ namespace Sign.Cli
                     return;
                 }
 
-                TokenCredential? credential = AzureCredentialOptions.CreateTokenCredential(context);
-                if (credential is null)
-                {
-                    return;
-                }
+                TokenCredential? credential = new AzureCliCredential();
 
                 // Some of the options are required and that is why we can safely use
                 // the null-forgiving operator (!) to simplify the code.
