@@ -35,3 +35,9 @@ jobs:
         BUILD_BOT_PASSWORD: ${{ secrets.BUILD_BOT_PASSWORD }}
         NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
       run: .\build.ps1 package --skip test
+    - name: Upload NuGet package
+      if: runner.os == 'Windows' && github.repository_owner == 'Faithlife' && github.ref == 'refs/heads/master'
+      uses: actions/upload-artifact@v4
+      with:
+        name: nupkg
+        path: release/*.nupkg
