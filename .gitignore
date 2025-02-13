@@ -5,7 +5,7 @@
 .dotnet/
 .packages/
 .tools/
-/[Tt]ools/
+/[Tt]ools/*
 
 # User-specific files
 *.suo
@@ -27,6 +27,9 @@
 bld/
 [Bb]in/
 [Oo]bj/
+
+# allow Faithlife.Build
+!/tools/Build/
 
 # Visual Studio 2015 cache/options directory
 .vs/
@@ -149,7 +152,7 @@ publish/
 *.[Pp]ublish.xml
 *.azurePubxml
 
-# TODO: Un-comment the next line if you do not want to checkin 
+# TODO: Un-comment the next line if you do not want to checkin
 # your web deploy settings because they may include unencrypted
 # passwords
 #*.pubxml
