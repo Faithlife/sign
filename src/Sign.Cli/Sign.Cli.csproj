@@ -2,7 +2,8 @@
   <Import Project="$(RepositoryRootDirectory)\SdkTools.props" />
 
   <PropertyGroup>
-    <AssemblyName>sign</AssemblyName>
+    <AssemblyName>Faithlife.SignTool</AssemblyName>
+    <PackageId>Faithlife.SignTool</PackageId>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
     <OutputType>Exe</OutputType>
@@ -12,7 +13,7 @@
     <RollForward>Major</RollForward>
     <RootNamespace>Sign.Cli</RootNamespace>
     <SelfContained>false</SelfContained>
-    <ToolCommandName>sign</ToolCommandName>
+    <ToolCommandName>faithlife-sign</ToolCommandName>
   </PropertyGroup>
 
   <ItemGroup>

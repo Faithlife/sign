@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="sign" />
+    <InternalsVisibleTo Include="Faithlife.SignTool" />
     <InternalsVisibleTo Include="Sign.SignatureProviders.TrustedSigning.Test" />
   </ItemGroup>
 

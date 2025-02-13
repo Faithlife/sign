@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="sign" />
+    <InternalsVisibleTo Include="Faithlife.SignTool" />
     <InternalsVisibleTo Include="Sign.Cli.Test" />
     <InternalsVisibleTo Include="Sign.Core.Test" />
     <InternalsVisibleTo Include="Sign.SignatureProviders.CertificateStore" />
