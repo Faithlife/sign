@@ -5,8 +5,13 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.IO;
+using Azure.CodeSigning;
+using Azure.CodeSigning.Extensions;
 using Azure.Core;
 using Azure.Identity;
+using Microsoft.Extensions.Azure;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Sign.Core;
 using Sign.SignatureProviders.TrustedSigning;
 
@@ -50,13 +55,37 @@ namespace Sign.Cli
 
                 TokenCredential? credential = new AzureCliCredential();
 
+                if (credential is null)
+                {
+                    return;
+                }
+
                 // Some of the options are required and that is why we can safely use
                 // the null-forgiving operator (!) to simplify the code.
                 Uri endpointUrl = context.ParseResult.GetValueForOption(EndpointOption)!;
                 string accountName = context.ParseResult.GetValueForOption(AccountOption)!;
                 string certificateProfileName = context.ParseResult.GetValueForOption(CertificateProfileOption)!;
 
-                TrustedSigningServiceProvider trustedSigningServiceProvider = new(credential, endpointUrl, accountName, certificateProfileName);
+                serviceProviderFactory.AddServices(services =>
+                {
+                    services.AddAzureClients(builder =>
+                    {
+                        builder.AddCertificateProfileClient(endpointUrl);
+                        builder.UseCredential(credential);
+                        builder.ConfigureDefaults(options => options.Retry.Mode = RetryMode.Exponential);
+                    });
+
+                    services.AddSingleton<TrustedSigningService>(serviceProvider =>
+                    {
+                        return new TrustedSigningService(
+                            serviceProvider.GetRequiredService<CertificateProfileClient>(),
+                            accountName,
+                            certificateProfileName,
+                            serviceProvider.GetRequiredService<ILogger<TrustedSigningService>>());
+                    });
+                });
+
+                TrustedSigningServiceProvider trustedSigningServiceProvider = new();
 
                 await codeCommand.HandleAsync(context, serviceProviderFactory, trustedSigningServiceProvider, filesArgument);
             });

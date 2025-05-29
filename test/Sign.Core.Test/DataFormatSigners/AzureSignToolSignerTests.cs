@@ -12,10 +12,10 @@ using Sign.TestInfrastructure;
 namespace Sign.Core.Test
 {
     [Collection(SigningTestsCollection.Name)]
-    public class AzureSignToolSignerTests
+    public sealed class AzureSignToolSignerTests : IDisposable
     {
         private readonly TrustedCertificateFixture _certificateFixture;
-        private readonly DirectoryService _directoryService = new(Mock.Of<ILogger<IDirectoryService>>());
+        private readonly DirectoryService _directoryService;
         private readonly AzureSignToolSigner _signer;
 
         public AzureSignToolSignerTests(TrustedCertificateFixture certificateFixture)
@@ -23,11 +23,17 @@ namespace Sign.Core.Test
             ArgumentNullException.ThrowIfNull(certificateFixture, nameof(certificateFixture));
 
             _certificateFixture = certificateFixture;
+            _directoryService = new(Mock.Of<ILogger<IDirectoryService>>());
             _signer = new AzureSignToolSigner(
                 Mock.Of<IToolConfigurationProvider>(),
                 Mock.Of<ISignatureAlgorithmProvider>(),
                 Mock.Of<ICertificateProvider>(),
                 Mock.Of<ILogger<IDataFormatSigner>>());
+        }
+
+        public void Dispose()
+        {
+            _directoryService.Dispose();
         }
 
         [Fact]
@@ -40,7 +46,6 @@ namespace Sign.Core.Test
         }
 
         [Theory]
-        [InlineData(".app")]
         [InlineData(".appx")]
         [InlineData(".appxbundle")]
         [InlineData(".cab")]
@@ -73,6 +78,33 @@ namespace Sign.Core.Test
             FileInfo file = new($"file{extension}");
 
             Assert.True(_signer.CanSign(file));
+        }
+
+
+        [Fact]
+        public void CanSign_WithNonDynamicsBusinessCentralAppFile_ReturnsFalse()
+        {
+            using (TemporaryDirectory temporaryDirectory = new(_directoryService))
+            {
+                FileInfo file = new(Path.Combine(temporaryDirectory.Directory.FullName, "file.app"));
+
+                File.WriteAllText(file.FullName, "{}");
+
+                Assert.False(_signer.CanSign(file));
+            }
+        }
+
+        [Fact]
+        public void CanSign_WithDynamicsBusinessCentralAppFile_ReturnsTrue()
+        {
+            using (TemporaryDirectory temporaryDirectory = new(_directoryService))
+            {
+                FileInfo file = new(Path.Combine(temporaryDirectory.Directory.FullName, "file.app"));
+
+                File.WriteAllBytes(file.FullName, new byte[] { 0x4e, 0x41, 0x56, 0x58 });
+
+                Assert.True(_signer.CanSign(file));
+            }
         }
 
         [Theory]

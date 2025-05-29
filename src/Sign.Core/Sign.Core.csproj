@@ -8,6 +8,7 @@
   <ItemGroup>
     <PackageReference Include="AzureSign.Core" PrivateAssets="analyzers;build;compile;contentfiles" />
     <PackageReference Include="Microsoft.Dynamics.BusinessCentral.Sip.Main" />
+    <PackageReference Include="Microsoft.Extensions.Azure" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
@@ -30,6 +31,7 @@
     <InternalsVisibleTo Include="Sign.SignatureProviders.KeyVault.Test" />
     <InternalsVisibleTo Include="Sign.SignatureProviders.TrustedSigning" />
     <InternalsVisibleTo Include="Sign.SignatureProviders.TrustedSigning.Test" />
+    <InternalsVisibleTo Include="Sign.TestInfrastructure" />
   </ItemGroup>
 
   <ItemGroup>

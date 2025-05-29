@@ -3,7 +3,6 @@
 // See the LICENSE.txt file in the project root for more information.
 
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using Azure;
 using Azure.CodeSigning;
 using Azure.CodeSigning.Models;
@@ -15,22 +14,34 @@ namespace Sign.SignatureProviders.TrustedSigning
         private readonly CertificateProfileClient _client;
         private readonly string _accountName;
         private readonly string _certificateProfileName;
-        private readonly X509Certificate2 _certificate;
+        private readonly RSA _rsaPublicKey;
 
         public RSATrustedSigning(
             CertificateProfileClient client,
             string accountName,
             string certificateProfileName,
-            X509Certificate2 certificate)
+            RSA rsaPublicKey)
         {
+            ArgumentNullException.ThrowIfNull(client, nameof(client));
+            ArgumentException.ThrowIfNullOrEmpty(accountName, nameof(accountName));
+            ArgumentException.ThrowIfNullOrEmpty(certificateProfileName, nameof(certificateProfileName));
+            ArgumentNullException.ThrowIfNull(rsaPublicKey, nameof(rsaPublicKey));
+
             _client = client;
             _accountName = accountName;
             _certificateProfileName = certificateProfileName;
-            _certificate = certificate;
+            _rsaPublicKey = rsaPublicKey;
         }
 
-        private RSA PublicKey
-            => _certificate.GetRSAPublicKey()!;
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _rsaPublicKey.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
 
         public override RSAParameters ExportParameters(bool includePrivateParameters)
         {
@@ -39,7 +50,7 @@ namespace Sign.SignatureProviders.TrustedSigning
                 throw new NotSupportedException();
             }
 
-            return PublicKey.ExportParameters(false);
+            return _rsaPublicKey.ExportParameters(false);
         }
 
         public override void ImportParameters(RSAParameters parameters)
@@ -55,13 +66,7 @@ namespace Sign.SignatureProviders.TrustedSigning
         }
 
         public override bool VerifyHash(byte[] hash, byte[] signature, HashAlgorithmName hashAlgorithm, RSASignaturePadding padding)
-            => PublicKey.VerifyHash(hash, signature, hashAlgorithm, padding);
-
-        protected override byte[] HashData(byte[] data, int offset, int count, HashAlgorithmName hashAlgorithm)
-        {
-            using HashAlgorithm hasher = CreateHasher(hashAlgorithm);
-            return hasher.ComputeHash(data, offset, count);
-        }
+            => _rsaPublicKey.VerifyHash(hash, signature, hashAlgorithm, padding);
 
         private static SignatureAlgorithm GetSignatureAlgorithm(byte[] digest, RSASignaturePadding padding)
             => digest.Length switch
@@ -69,15 +74,6 @@ namespace Sign.SignatureProviders.TrustedSigning
                 32 => padding == RSASignaturePadding.Pss ? Azure.CodeSigning.Models.SignatureAlgorithm.PS256 : Azure.CodeSigning.Models.SignatureAlgorithm.RS256,
                 48 => padding == RSASignaturePadding.Pss ? Azure.CodeSigning.Models.SignatureAlgorithm.PS384 : Azure.CodeSigning.Models.SignatureAlgorithm.RS384,
                 64 => padding == RSASignaturePadding.Pss ? Azure.CodeSigning.Models.SignatureAlgorithm.PS512 : Azure.CodeSigning.Models.SignatureAlgorithm.RS512,
-                _ => throw new NotSupportedException(),
-            };
-
-        private static HashAlgorithm CreateHasher(HashAlgorithmName hashAlgorithm)
-            => hashAlgorithm.Name switch
-            {
-                nameof(SHA256) => SHA256.Create(),
-                nameof(SHA384) => SHA384.Create(),
-                nameof(SHA512) => SHA512.Create(),
                 _ => throw new NotSupportedException(),
             };
     }
