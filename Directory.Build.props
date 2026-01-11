@@ -18,14 +18,19 @@
     <IsShipping>false</IsShipping>
     <LangVersion>Latest</LangVersion>
     <!-- CS8002:  some dependencies are not strong name signed. -->
-    <!-- NU1507:  have not yet onboarded to package source mapping. -->
-    <NoWarn>CS8002;NU1507</NoWarn>
+    <NoWarn>CS8002</NoWarn>
     <Nullable>enable</Nullable>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <TargetFramework>net8.0</TargetFramework>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <UpdateXlfOnBuild Condition="'$(CI)' != '1'">true</UpdateXlfOnBuild>
+  </PropertyGroup>
+
+  <!-- See https://github.com/dotnet/sdk/pull/51281 -->
+  <PropertyGroup>
+    <CreateRidSpecificToolPackages>false</CreateRidSpecificToolPackages>
+    <UseAppHost>false</UseAppHost>
   </PropertyGroup>
 
   <PropertyGroup>
