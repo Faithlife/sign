@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Faithlife.Build;
 
 return BuildRunner.Execute(args, build =>
@@ -31,10 +28,8 @@ return BuildRunner.Execute(args, build =>
         {
             return
             [
-                ("PublishWindowsPdb", "false"),
                 ("ContinuousIntegrationBuild", "true"),
                 ("OfficialBuildId", $"{DateTime.UtcNow.ToString("yyyyMMdd")}.{buildNumber}"),
-                ("WindowsSDKBuildToolsBinVersionedFolder", TryGetWindowsSdkBinFolder() ?? ""),
             ];
         }
 
@@ -42,35 +37,4 @@ return BuildRunner.Execute(args, build =>
     };
     build.AddDotNetTargets(settings);
 });
-
-static string? TryGetWindowsSdkBinFolder()
-{
-    var nugetRoot = Environment.GetEnvironmentVariable("NUGET_PACKAGES")
-        ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages");
-
-    var packageRoot = Path.Combine(nugetRoot, "microsoft.windows.sdk.buildtools");
-    if (!Directory.Exists(packageRoot))
-        return null;
-
-    var bestPackage = Directory.EnumerateDirectories(packageRoot)
-        .Select(dir => Version.TryParse(Path.GetFileName(dir), out var version) ? (Directory: dir, Version: version) : (null, null))
-        .Where(x => x.Version is not null)
-        .OrderByDescending<(string? Directory, Version? Version), Version>(x => x.Version!)
-        .FirstOrDefault();
-
-    if (bestPackage.Directory is null)
-        return null;
-
-    var binRoot = Path.Combine(bestPackage.Directory, "bin");
-    if (!Directory.Exists(binRoot))
-        return null;
-
-    var bestBin = Directory.EnumerateDirectories(binRoot)
-        .Select(dir => Version.TryParse(Path.GetFileName(dir), out var version) ? (Directory: dir, Version: version) : (null, null))
-        .Where(entry => entry.Directory is not null)
-        .OrderByDescending<(string? Directory, Version? Version), Version>(x => x.Version!)
-        .FirstOrDefault();
-
-    return bestBin.Directory;
-}
 
