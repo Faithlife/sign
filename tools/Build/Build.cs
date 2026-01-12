@@ -1,3 +1,6 @@
+using System;
+using Faithlife.Build;
+
 return BuildRunner.Execute(args, build =>
 {
     var gitLogin = new GitLoginInfo("faithlifebuildbot", Environment.GetEnvironmentVariable("BUILD_BOT_PASSWORD") ?? "");
