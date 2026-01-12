@@ -6,7 +6,6 @@ using System.CommandLine;
 using Azure.CodeSigning;
 using Azure.CodeSigning.Extensions;
 using Azure.Core;
-using Azure.Identity;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -20,6 +19,7 @@ namespace Sign.Cli
         internal Option<Uri> EndpointOption { get; }
         internal Option<string> AccountOption { get; }
         internal Option<string> CertificateProfileOption { get; }
+        internal AzureCredentialOptions AzureCredentialOptions { get; } = new();
 
         internal Argument<List<string>?> FilesArgument { get; }
 
@@ -53,6 +53,7 @@ namespace Sign.Cli
             Options.Add(EndpointOption);
             Options.Add(AccountOption);
             Options.Add(CertificateProfileOption);
+            AzureCredentialOptions.AddOptionsToCommand(this);
 
             Arguments.Add(FilesArgument);
 
@@ -67,7 +68,7 @@ namespace Sign.Cli
                     return Task.FromResult(ExitCode.InvalidOptions);
                 }
 
-                TokenCredential? credential = new AzureCliCredential();
+                TokenCredential? credential = AzureCredentialOptions.CreateTokenCredential(parseResult);
 
                 if (credential is null)
                 {
